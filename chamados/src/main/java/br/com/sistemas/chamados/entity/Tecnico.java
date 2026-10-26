@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** ENTITY: representa a tabela do banco. Cada objeto = uma linha. */
 @Entity
 @Table(name = "tecnicos")
 public class Tecnico {

@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** ENTITY: chamado aberto por um cliente, de uma categoria, atendido por um técnico. */
 @Entity
 @Table(name = "chamados")
 public class Chamado {
