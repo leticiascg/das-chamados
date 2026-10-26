@@ -1,7 +1,10 @@
 package br.com.sistemas.chamados.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import br.com.sistemas.chamados.entity.Prioridade;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,8 +54,17 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChamadoResponse> listar() {
-        return repository.findAll().stream().map(ChamadoResponse::de).toList();
+    public Page<ChamadoResponse> listar(StatusChamado status, Prioridade prioridade,
+                                        Long clienteId, Pageable pageable) {
+        return repository.filtrar(status, prioridade, clienteId, pageable)
+                .map(ChamadoResponse::de);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChamadoResponse> listarPorCliente(Long clienteId, Pageable pageable) {
+        buscarCliente(clienteId);
+        return repository.filtrar(null, null, clienteId, pageable)
+                .map(ChamadoResponse::de);
     }
 
     @Transactional(readOnly = true)
