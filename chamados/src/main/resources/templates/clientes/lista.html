@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Clientes')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: lateral('clientes')}"></aside>
+  <main class="conteudo">
+    <header class="topo">
+      <h1>Clientes</h1>
+      <a class="btn btn-primary" th:href="@{/ui/clientes/novo}">Cadastrar cliente</a>
+    </header>
+
+    <div th:replace="~{fragments/layout :: aviso}"></div>
+
+    <p class="vazio" th:if="${#lists.isEmpty(clientes)}">
+      Nenhum cliente cadastrado. Cadastre o primeiro para poder abrir chamados em nome dele.
+    </p>
+
+    <div class="tabela-caixa" th:unless="${#lists.isEmpty(clientes)}">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <caption class="visually-hidden">Lista de clientes</caption>
+          <thead>
+            <tr>
+              <th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Telefone</th>
+              <th scope="col" class="text-end"><span class="visually-hidden">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="c : ${clientes}">
+              <td><a th:href="@{/ui/clientes/{id}(id=${c.id})}" th:text="${c.nome}">Nome</a></td>
+              <td th:text="${c.email}">email</td>
+              <td th:text="${c.telefone}">telefone</td>
+              <td class="text-end acoes">
+                <a class="btn btn-sm btn-light" th:href="@{/ui/clientes/{id}/editar(id=${c.id})}">Editar</a>
+                <form class="d-inline" th:action="@{/ui/clientes/{id}/excluir(id=${c.id})}" method="post"
+                      onsubmit="return confirm('Excluir este cliente?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${cliente.nome})}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: lateral('clientes')}"></aside>
+  <main class="conteudo">
+    <header class="topo">
+      <h1 th:text="${cliente.nome}">Nome</h1>
+      <a class="btn btn-light" th:href="@{/ui/clientes}">Voltar para clientes</a>
+    </header>
+
+    <div th:replace="~{fragments/layout :: aviso}"></div>
+
+    <dl class="dados mb-4">
+      <dt>E-mail</dt>
+      <dd th:text="${cliente.email}">email</dd>
+      <dt>Telefone</dt>
+      <dd th:text="${#strings.isEmpty(cliente.telefone)} ? 'Não informado' : ${cliente.telefone}">telefone</dd>
+    </dl>
+
+    <div class="d-flex flex-wrap gap-2 mb-5">
+      <a class="btn btn-primary" th:href="@{/ui/chamados/novo(clienteId=${cliente.id})}">Abrir chamado para este cliente</a>
+      <a class="btn btn-light" th:href="@{/ui/clientes/{id}/editar(id=${cliente.id})}">Editar</a>
+      <form th:action="@{/ui/clientes/{id}/excluir(id=${cliente.id})}" method="post"
+            onsubmit="return confirm('Excluir este cliente?');">
+        <button type="submit" class="btn btn-outline-danger">Excluir</button>
+      </form>
+    </div>
+
+    <section aria-labelledby="t-chamados">
+      <h2 id="t-chamados" class="h5 mb-3">Chamados deste cliente</h2>
+      <p class="vazio" th:if="${#lists.isEmpty(chamados)}">Este cliente ainda não abriu chamados.</p>
+      <div class="tabela-caixa" th:unless="${#lists.isEmpty(chamados)}">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th scope="col">Título</th><th scope="col">Prioridade</th><th scope="col">Status</th><th scope="col">Abertura</th></tr></thead>
+            <tbody>
+              <tr th:each="c : ${chamados}">
+                <td><a th:href="@{/ui/chamados/{id}(id=${c.id})}" th:text="${c.titulo}">Título</a></td>
+                <td><span class="etiqueta" th:classappend="${@rotulos.prioridadeClasse(c.prioridade)}" th:text="${@rotulos.prioridade(c.prioridade)}">Média</span></td>
+                <td><span class="etiqueta" th:classappend="${@rotulos.statusClasse(c.status)}" th:text="${@rotulos.status(c.status)}">Aberto</span></td>
+                <td th:text="${#temporals.format(c.dataAbertura, 'dd/MM/yyyy HH:mm')}">data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

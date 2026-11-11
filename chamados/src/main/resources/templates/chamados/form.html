@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${modo == 'novo' ? 'Novo chamado' : 'Editar chamado'})}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: lateral('chamados')}"></aside>
+  <main class="conteudo">
+    <header class="topo">
+      <h1 th:text="${modo == 'novo'} ? 'Novo chamado' : 'Editar chamado'">Novo chamado</h1>
+    </header>
+
+    <p class="vazio" th:if="${#lists.isEmpty(clientes) or #lists.isEmpty(categorias)}">
+      Para abrir um chamado é preciso ter ao menos um
+      <a th:href="@{/ui/clientes/novo}">cliente</a> e uma
+      <a th:href="@{/ui/categorias/novo}">categoria</a> cadastrados.
+    </p>
+
+    <form class="formulario formulario-largo" method="post" novalidate th:object="${form}"
+          th:action="${modo == 'novo'} ? @{/ui/chamados} : @{/ui/chamados/{id}(id=${id})}">
+
+      <div class="mb-3">
+        <label for="titulo" class="form-label">Título</label>
+        <input id="titulo" type="text" class="form-control" th:field="*{titulo}" maxlength="150"
+               th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:errors="*{titulo}">Erro</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="descricao" class="form-label">Descrição <span class="text-secondary">(opcional)</span></label>
+        <textarea id="descricao" rows="5" class="form-control" th:field="*{descricao}" maxlength="1000"
+                  th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+        <div class="invalid-feedback" th:errors="*{descricao}">Erro</div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label for="clienteId" class="form-label">Cliente</label>
+          <select id="clienteId" class="form-select" th:field="*{clienteId}"
+                  th:classappend="${#fields.hasErrors('clienteId')} ? 'is-invalid'">
+            <option value="">Selecione</option>
+            <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}">Cliente</option>
+          </select>
+          <div class="invalid-feedback" th:errors="*{clienteId}">Erro</div>
+        </div>
+        <div class="col-md-4">
+          <label for="categoriaId" class="form-label">Categoria</label>
+          <select id="categoriaId" class="form-select" th:field="*{categoriaId}"
+                  th:classappend="${#fields.hasErrors('categoriaId')} ? 'is-invalid'">
+            <option value="">Selecione</option>
+            <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nome}">Categoria</option>
+          </select>
+          <div class="invalid-feedback" th:errors="*{categoriaId}">Erro</div>
+        </div>
+        <div class="col-md-4">
+          <label for="prioridade" class="form-label">Prioridade</label>
+          <select id="prioridade" class="form-select" th:field="*{prioridade}"
+                  th:classappend="${#fields.hasErrors('prioridade')} ? 'is-invalid'">
+            <option th:each="p : ${prioridades}" th:value="${p}" th:text="${@rotulos.prioridade(p)}">Prioridade</option>
+          </select>
+          <div class="invalid-feedback" th:errors="*{prioridade}">Erro</div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"
+                th:text="${modo == 'novo'} ? 'Abrir chamado' : 'Salvar alterações'">Salvar</button>
+        <a class="btn btn-light" th:href="${modo == 'novo'} ? @{/ui/chamados} : @{/ui/chamados/{id}(id=${id})}">Cancelar</a>
+      </div>
+    </form>
+  </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

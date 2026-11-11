@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${chamado.titulo})}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: lateral('chamados')}"></aside>
+  <main class="conteudo conteudo-largo">
+    <header class="topo">
+      <div>
+        <h1 class="mb-2" th:text="${chamado.titulo}">Título</h1>
+        <span class="etiqueta" th:classappend="${@rotulos.statusClasse(chamado.status)}" th:text="${@rotulos.status(chamado.status)}">Aberto</span>
+        <span class="etiqueta" th:classappend="${@rotulos.prioridadeClasse(chamado.prioridade)}" th:text="${'Prioridade ' + @rotulos.prioridade(chamado.prioridade).toLowerCase()}">Prioridade média</span>
+      </div>
+      <a class="btn btn-light" th:href="@{/ui/chamados}">Voltar para chamados</a>
+    </header>
+
+    <div th:replace="~{fragments/layout :: aviso}"></div>
+
+    <div class="row g-4">
+      <!-- coluna principal: descricao e comentarios -->
+      <div class="col-lg-8">
+        <section class="painel mb-4" aria-labelledby="t-desc">
+          <h2 id="t-desc" class="h6 mb-2">Descrição</h2>
+          <p class="mb-0 texto-livre" th:text="${#strings.isEmpty(chamado.descricao)} ? 'Sem descrição.' : ${chamado.descricao}">Descrição</p>
+        </section>
+
+        <section class="painel" aria-labelledby="t-coment">
+          <h2 id="t-coment" class="h6 mb-3">Comentários</h2>
+
+          <p class="text-secondary" th:if="${#lists.isEmpty(comentarios)}">
+            Nenhum comentário ainda. Registre abaixo o andamento do atendimento.
+          </p>
+
+          <ul class="comentarios" th:unless="${#lists.isEmpty(comentarios)}">
+            <li th:each="m : ${comentarios}">
+              <div class="d-flex justify-content-between flex-wrap gap-1">
+                <strong th:text="${m.autor}">Autor</strong>
+                <small class="text-secondary" th:text="${#temporals.format(m.data, 'dd/MM/yyyy HH:mm')}">data</small>
+              </div>
+              <p class="mb-0 texto-livre" th:text="${m.texto}">Texto</p>
+            </li>
+          </ul>
+
+          <form method="post" novalidate class="mt-4" th:object="${comentarioForm}"
+                th:action="@{/ui/chamados/{id}/comentarios(id=${chamado.id})}">
+            <div class="mb-3">
+              <label for="autor" class="form-label">Seu nome</label>
+              <input id="autor" type="text" class="form-control" th:field="*{autor}" maxlength="100"
+                     th:classappend="${#fields.hasErrors('autor')} ? 'is-invalid'">
+              <div class="invalid-feedback" th:errors="*{autor}">Erro</div>
+            </div>
+            <div class="mb-3">
+              <label for="texto" class="form-label">Comentário</label>
+              <textarea id="texto" rows="3" class="form-control" th:field="*{texto}" maxlength="1000"
+                        th:classappend="${#fields.hasErrors('texto')} ? 'is-invalid'"></textarea>
+              <div class="invalid-feedback" th:errors="*{texto}">Erro</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar comentário</button>
+          </form>
+        </section>
+      </div>
+
+      <!-- coluna lateral: dados e acoes -->
+      <div class="col-lg-4">
+        <section class="painel mb-4" aria-labelledby="t-dados">
+          <h2 id="t-dados" class="h6 mb-3">Dados do chamado</h2>
+          <dl class="dados dados-estreito mb-0">
+            <dt>Cliente</dt>
+            <dd><a th:href="@{/ui/clientes/{id}(id=${chamado.clienteId})}" th:text="${chamado.clienteNome}">Cliente</a></dd>
+            <dt>Categoria</dt>
+            <dd th:text="${chamado.categoriaNome}">Categoria</dd>
+            <dt>Técnico</dt>
+            <dd th:text="${chamado.tecnicoNome != null} ? ${chamado.tecnicoNome} : 'Sem técnico'">Técnico</dd>
+            <dt>Aberto em</dt>
+            <dd th:text="${#temporals.format(chamado.dataAbertura, 'dd/MM/yyyy HH:mm')}">data</dd>
+            <dt th:if="${chamado.dataFechamento != null}">Fechado em</dt>
+            <dd th:if="${chamado.dataFechamento != null}" th:text="${#temporals.format(chamado.dataFechamento, 'dd/MM/yyyy HH:mm')}">data</dd>
+          </dl>
+        </section>
+
+        <section class="painel mb-4" aria-labelledby="t-acoes" th:if="${chamado.status.name() != 'FECHADO'}">
+          <h2 id="t-acoes" class="h6 mb-3">Atendimento</h2>
+
+          <form method="post" class="mb-4" th:action="@{/ui/chamados/{id}/atribuir(id=${chamado.id})}">
+            <label for="tecnicoId" class="form-label">Atribuir técnico</label>
+            <select id="tecnicoId" name="tecnicoId" class="form-select mb-2">
+              <option value="">Selecione</option>
+              <option th:each="t : ${tecnicos}" th:value="${t.id}" th:text="${t.nome}"
+                      th:selected="${t.id == chamado.tecnicoId}">Técnico</option>
+            </select>
+            <button type="submit" class="btn btn-light w-100">Atribuir</button>
+          </form>
+
+          <form method="post" th:action="@{/ui/chamados/{id}/status(id=${chamado.id})}">
+            <label for="status" class="form-label">Alterar status</label>
+            <select id="status" name="status" class="form-select mb-2">
+              <option value="">Selecione</option>
+              <option th:each="s : ${statusOpcoes}" th:unless="${s == chamado.status}"
+                      th:value="${s}" th:text="${@rotulos.status(s)}">Status</option>
+            </select>
+            <button type="submit" class="btn btn-light w-100">Atualizar status</button>
+          </form>
+        </section>
+
+        <p class="text-secondary" th:if="${chamado.status.name() == 'FECHADO'}">
+          Este chamado está fechado e não pode mais ser alterado.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-light" th:if="${chamado.status.name() != 'FECHADO'}"
+             th:href="@{/ui/chamados/{id}/editar(id=${chamado.id})}">Editar chamado</a>
+          <form th:action="@{/ui/chamados/{id}/excluir(id=${chamado.id})}" method="post"
+                onsubmit="return confirm('Excluir este chamado?');">
+            <button type="submit" class="btn btn-outline-danger">Excluir</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
