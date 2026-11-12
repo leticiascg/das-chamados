@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Painel')}"></head>
+<body>
+<div class="app">
+  <aside th:replace="~{fragments/layout :: lateral('painel')}"></aside>
+
+  <main class="conteudo">
+    <header class="topo">
+      <h1>Painel</h1>
+      <a class="btn btn-primary" th:href="@{/ui/chamados/novo}">Abrir chamado</a>
+    </header>
+
+    <div th:replace="~{fragments/layout :: aviso}"></div>
+
+    <div class="row g-4 mb-4">
+      <section class="col-lg-8" aria-labelledby="t-fila">
+        <div class="painel h-100">
+          <div class="painel-titulo">
+            <h2 id="t-fila">Fila de chamados</h2>
+            <span class="texto-suave" th:text="|${totalChamados} ${totalChamados == 1 ? 'chamado' : 'chamados'}|">0 chamados</span>
+          </div>
+          <ul class="fila">
+            <li th:each="e : ${porStatus}" th:classappend="${@rotulos.statusClasse(e.key)}">
+              <a th:href="@{/ui/chamados(status=${e.key})}">
+                <span class="fila-nome" th:text="${@rotulos.status(e.key)}">Status</span>
+                <strong class="fila-qtd" th:text="${e.value}">0</strong>
+                <span class="barra" aria-hidden="true">
+                  <span class="barra-cheia"
+                        th:style="|width: ${totalChamados > 0 ? e.value * 100 / totalChamados : 0}%|"></span>
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="col-lg-4" aria-labelledby="t-cadastros">
+        <div class="painel h-100">
+          <div class="painel-titulo"><h2 id="t-cadastros">Cadastros</h2></div>
+          <ul class="cadastros">
+            <li><a th:href="@{/ui/clientes}"><span>Clientes</span><strong th:text="${totalClientes}">0</strong></a></li>
+            <li><a th:href="@{/ui/tecnicos}"><span>Técnicos</span><strong th:text="${totalTecnicos}">0</strong></a></li>
+            <li><a th:href="@{/ui/categorias}"><span>Categorias</span><strong th:text="${totalCategorias}">0</strong></a></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <section aria-labelledby="t-recentes">
+      <div class="d-flex justify-content-between align-items-baseline mb-2">
+        <h2 id="t-recentes" class="h5 m-0">Chamados recentes</h2>
+        <a th:href="@{/ui/chamados}">Ver todos</a>
+      </div>
+
+      <p class="vazio" th:if="${#lists.isEmpty(ultimosChamados)}">
+        Nenhum chamado ainda. <a th:href="@{/ui/chamados/novo}">Abra o primeiro chamado</a>.
+        Se ainda não houver clientes e categorias, cadastre-os antes.
+      </p>
+
+      <div class="tabela-caixa" th:unless="${#lists.isEmpty(ultimosChamados)}">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr><th scope="col">Título</th><th scope="col">Cliente</th><th scope="col">Prioridade</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody>
+              <tr th:each="c : ${ultimosChamados}">
+                <td><a th:href="@{/ui/chamados/{id}(id=${c.id})}" th:text="${c.titulo}">Título</a></td>
+                <td th:text="${c.clienteNome}">Cliente</td>
+                <td><span class="etiqueta" th:classappend="${@rotulos.prioridadeClasse(c.prioridade)}" th:text="${@rotulos.prioridade(c.prioridade)}">Média</span></td>
+                <td><span class="etiqueta" th:classappend="${@rotulos.statusClasse(c.status)}" th:text="${@rotulos.status(c.status)}">Aberto</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
